@@ -1,0 +1,14 @@
+fastapi>=0.104.1
+uvicorn>=0.24.0
+langchain>=0.0.336
+openai>=1.2.3
+kubernetes>=28.1.0
+prometheus-api-client>=0.5.4
+grafana-loki-client>=0.1.0
+python-terraform>=0.10.1
+pydantic>=2.4.2
+typer>=0.9.0
+python-dotenv>=1.0.0
+rich>=13.6.0
+pyyaml>=6.0.1
+jinja2>=3.1.2

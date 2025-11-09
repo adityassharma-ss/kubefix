@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubefix
+  namespace: kubefix
+  labels:
+    app: kubefix
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kubefix
+  template:
+    metadata:
+      labels:
+        app: kubefix
+    spec:
+      serviceAccountName: kubefix
+      automountServiceAccountToken: true
+      containers:
+      - name: kubefix
+        image: kubefix:v1.0.0
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: data
+          mountPath: /app/data
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: kubefix-secrets
+              key: openai-api-key
+        - name: PROMETHEUS_URL
+          value: "http://prometheus-server.monitoring:9090"
+        - name: LOKI_URL
+          value: "http://loki.monitoring:3100"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+            ephemeral-storage: "1Gi"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+            ephemeral-storage: "2Gi"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubefix
+  namespace: kubefix
+spec:
+  selector:
+    app: kubefix
+  ports:
+  - port: 80
+    targetPort: 8000
+    name: http
+  type: ClusterIP

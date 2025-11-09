@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  kubefix:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ~/.kube:/root/.kube  # For local development with kubectl config
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PROMETHEUS_URL=${PROMETHEUS_URL}
+      - LOKI_URL=${LOKI_URL}
+    depends_on:
+      - prometheus
+      - loki
+
+  prometheus:
+    image: prom/prometheus:v2.47.2
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+
+  loki:
+    image: grafana/loki:2.9.2
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./config/loki:/etc/loki
+      - loki_data:/loki
+
+volumes:
+  prometheus_data:
+  loki_data:
